@@ -4,14 +4,14 @@ from dp2 import policy_evaluation, policy_improvement
 
 env = gw.Env()
 
-state_values = policy_evaluation(env)
-policy_improvement(env, state_values)
-policy_evaluation(env, state_values)
-policy_improvement(env, state_values)
+stable = False
+state_values = None
+while not stable:
+    state_values = policy_evaluation(env, state_values)
+    stable = policy_improvement(env, state_values)
 
 for state in env.S:
-    print("For state {}".format(state))
+    print("For state {}, {}".format(state, state_values[state]))
     for action in env.A:
-        print(action, env.policy(state, action))
+        print(action, env.policy[state, action])
     print("\n\n")
-        

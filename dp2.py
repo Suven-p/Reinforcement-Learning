@@ -1,6 +1,7 @@
 import numpy as np
 from gridWorld2 import Env
 
+
 def compute_state_value(env: Env, state_values, s, gamma):
     new_value = 0
     for a in env.A:
@@ -50,33 +51,30 @@ def policy_evaluation(env: Env, state_values=None, discount=1.0):
 
 
 def policy_improvement(env: Env, state_values, discount: float = 1.0):
-    while True:
-        stable = True
-        for s in env.S:
-            if s in env.TerminalStates:
-                continue
-            optimal_actions = None
-            optimal_action_value = float('-inf')
-            for a in env.A:
-                current_value = 0.0
-                for s_ in env.S:
-                    for r in env.R:
-                        prob = env.prob(s_, r, s, a)
-                        current_value += prob * (
-                            r + discount * state_values[s_])
-                if abs(current_value - optimal_action_value) < 1e-6:
-                    optimal_actions.append(a)
-                elif current_value > optimal_action_value:
-                    optimal_action_value = current_value
-                    optimal_actions = [a]
-            new_policy = []
-            for a in env.A:
-                if a in optimal_actions:
-                    new_policy.append(1 / len(optimal_actions))
-                else:
-                    new_policy.append(0)
-            if new_policy != env.policy[s]:
-                stable = False
-            env.policy[s] = new_policy
-        if stable:
-            break
+    stable = True
+    for s in env.S:
+        if s in env.TerminalStates:
+            continue
+        optimal_actions = None
+        optimal_action_value = float('-inf')
+        for a in env.A:
+            current_value = 0.0
+            for s_ in env.S:
+                for r in env.R:
+                    prob = env.prob(s_, r, s, a)
+                    current_value += prob * (
+                        r + discount * state_values[s_])
+            if abs(current_value - optimal_action_value) < 1e-6:
+                optimal_actions.append(a)
+            elif current_value > optimal_action_value:
+                optimal_action_value = current_value
+                optimal_actions = [a]
+        new_policy = []
+        for a in env.A:
+            if a in optimal_actions:
+                new_policy.append(1 / len(optimal_actions))
+            else:
+                new_policy.append(0)
+        stable = stable and np.array_equal(new_policy, env.policy[s])
+        env.policy[s] = new_policy
+        return stable
