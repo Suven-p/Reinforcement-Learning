@@ -54,6 +54,7 @@ class Env:
     def get_state_from_index(self, index):
         return (index % self.size[1], index // self.size[1])
 
+    @property
     def policy(self):
         """
         Implements policy
