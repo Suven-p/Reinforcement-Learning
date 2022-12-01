@@ -1,6 +1,6 @@
 import numpy as np
-import gridWorld2 as gw
-from dp2 import policy_evaluation, policy_improvement
+import gridWorld as gw
+from dp import policy_evaluation, policy_improvement
 
 env = gw.Env()
 

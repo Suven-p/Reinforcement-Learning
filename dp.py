@@ -1,5 +1,5 @@
 import numpy as np
-from gridWorld2 import Env
+from gridWorld import Env
 
 
 def compute_state_value(env: Env, state_values, s, gamma):
