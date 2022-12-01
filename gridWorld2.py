@@ -52,7 +52,7 @@ class Env:
         return state[0] * self.size[1] + state[1]
 
     def get_state_from_index(self, index):
-        return (index % self.size[1], index // self.size[1])
+        return (index // self.size[1], index % self.size[1])
 
     @property
     def policy(self):
