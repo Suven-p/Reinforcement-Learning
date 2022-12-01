@@ -107,21 +107,63 @@ class Env:
 
 
 if __name__ == "__main__":
-    env = Env()
+    env = Env(terminal_states=[0])
     for state in env.S:
         for action in env.A:
-            assert env.policy(state, action) == 0.25
-    assert env((0, 0), env.A.L) == ((0, 0), 0)
-    assert env((0, 0), env.A.U) == ((0, 0), 0)
-    assert env((0, 0), env.A.R) == ((0, 0), 0)
-    assert env((0, 0), env.A.D) == ((0, 0), 0)
+            assert env.policy[state, action] == 0.25
 
-    assert env((2, 2), env.A.L) == ((2, 1), -1)
-    assert env((2, 2), env.A.U) == ((1, 2), -1)
-    assert env((2, 2), env.A.R) == ((2, 3), -1)
-    assert env((2, 2), env.A.D) == ((3, 2), -1)
+    assert np.array_equal(env(env.get_state_index((0, 0)), env.A.L),
+                          (env.get_state_index((0, 0)), 0))
+    assert np.array_equal(env(env.get_state_index((0, 0)), env.A.U),
+                          (env.get_state_index((0, 0)), 0))
+    assert np.array_equal(env(env.get_state_index((0, 0)), env.A.R),
+                          (env.get_state_index((0, 0)), 0))
+    assert np.array_equal(env(env.get_state_index((0, 0)), env.A.D),
+                          (env.get_state_index((0, 0)), 0))
 
-    assert env((3, 3), env.A.L) == ((3, 2), -1)
-    assert env((3, 3), env.A.U) == ((2, 3), -1)
-    assert env((3, 3), env.A.R) == ((3, 3), -1)
-    assert env((3, 3), env.A.D) == ((3, 3), -1)
+    assert np.array_equal(env(env.get_state_index((0, 3)), env.A.L),
+                          (env.get_state_index((0, 2)), -1))
+    assert np.array_equal(env(env.get_state_index((0, 3)), env.A.U),
+                          (env.get_state_index((0, 3)), -1))
+    assert np.array_equal(env(env.get_state_index((0, 3)), env.A.R),
+                          (env.get_state_index((0, 3)), -1))
+    assert np.array_equal(env(env.get_state_index((0, 3)), env.A.D),
+                          (env.get_state_index((1, 3)), -1))
+
+    assert np.array_equal(env(env.get_state_index((3, 0)), env.A.L),
+                          (env.get_state_index((3, 0)), -1))
+    assert np.array_equal(env(env.get_state_index((3, 0)), env.A.U),
+                          (env.get_state_index((2, 0)), -1))
+    assert np.array_equal(env(env.get_state_index((3, 0)), env.A.R),
+                          (env.get_state_index((3, 1)), -1))
+    assert np.array_equal(env(env.get_state_index((3, 0)), env.A.D),
+                          (env.get_state_index((3, 0)), -1))
+
+    assert np.array_equal(env(env.get_state_index((2, 2)), env.A.L),
+                          (env.get_state_index((2, 1)), -1))
+    assert np.array_equal(env(env.get_state_index((2, 2)), env.A.U),
+                          (env.get_state_index((1, 2)), -1))
+
+    assert np.array_equal(env(env.get_state_index((2, 2)), env.A.R),
+                          (env.get_state_index((2, 3)), -1))
+    assert np.array_equal(env(env.get_state_index((2, 2)), env.A.D),
+                          (env.get_state_index((3, 2)), -1))
+
+    assert np.array_equal(env(env.get_state_index((3, 3)), env.A.L),
+                          (env.get_state_index((3, 2)), -1))
+    assert np.array_equal(env(env.get_state_index((3, 3)), env.A.U),
+                          (env.get_state_index((2, 3)), -1))
+    assert np.array_equal(env(env.get_state_index((3, 3)), env.A.R),
+                          (env.get_state_index((3, 3)), -1))
+    assert np.array_equal(env(env.get_state_index((3, 3)), env.A.D),
+                          (env.get_state_index((3, 3)), -1))
+
+    env = Env(terminal_states=[0, 15])
+    assert np.array_equal(env(env.get_state_index((3, 3)), env.A.L),
+                          (env.get_state_index((3, 3)), 0))
+    assert np.array_equal(env(env.get_state_index((3, 3)), env.A.U),
+                          (env.get_state_index((3, 3)), 0))
+    assert np.array_equal(env(env.get_state_index((3, 3)), env.A.R),
+                          (env.get_state_index((3, 3)), 0))
+    assert np.array_equal(env(env.get_state_index((3, 3)), env.A.D),
+                          (env.get_state_index((3, 3)), 0))
