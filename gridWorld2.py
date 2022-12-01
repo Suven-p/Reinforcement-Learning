@@ -36,7 +36,7 @@ class Env:
                 for s_ in self.S:
                     for r in range(len(self.R)):
                         self.transitions[s, int(a), s_,
-                                         r] = self.__initial_prob(s, s_, a, r)
+                                         r] = self._initial_prob(s, s_, a, self.R[r])
 
         for s in self.S:
             for a in self.A:
