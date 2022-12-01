@@ -3,6 +3,13 @@ import numpy as np
 import random
 
 
+class Actions(IntEnum):
+    U = 0
+    D = 1
+    L = 2
+    R = 3
+
+
 class Env:
     """
     A 4x4 grid world where possible action are movement in up, down, left or right direction
@@ -12,29 +19,18 @@ class Env:
     In default state, the policy table assumes each action is optimal
     """
 
-    def __init__(self, grid_size=(4, 4), state_values=None):
-        self.S = [(i, j) for i in range(grid_size[0])
-                  for j in range(grid_size[1])]
-        self.TerminalStates = ((0, 0), )
-        self.A = IntEnum('Actions', ['U', 'D', 'L', 'R'])
-        self.R = (-1, 0, -10)
+    def __init__(self, grid_size=(4, 4), terminal_states=[(0, 0), (3, 3)]):
+        self.S = np.array([(i, j) for i in range(grid_size[0])
+                           for j in range(grid_size[1])])
+        self.TerminalStates = terminal_states
+        self.A = np.array([int(i) for i in Actions])
+        self.R = np.array((-1, 0, -10))
         self.size = grid_size
 
-        if state_values is None:
-            state_values = np.zeros(self.size)
-        if len(state_values) * len(state_values[0]) != self.size[0] * self.size[1]:
-            raise ValueError(
-                "Length {} of state_values does not match grid size {}".format(
-                    len(state_values), self.S.size
-                ))
-        self.state_values = state_values
-
-        self.policy_table = {}
-        self.rewards_table = {}
-        for state in self.S:
-            self.policy_table[state] = [a for a in self.A]
-            self.rewards_table[state] = 0 if state in self.TerminalStates else -1
-        # self.rewards_table[(2, 0)] = -10
+    def get_state_index(self, state):
+        if not np.any([np.all(self.S[k] == state) for k in range(len(self.S))]):
+            raise ValueError("Invalid state {}".format(state))
+        return state[0] * self.size[1] + state[1]
 
     def policy(self, state, action):
         """
@@ -65,7 +61,7 @@ class Env:
         elif action == self.A.R:
             new_col = min(state[1]+1, self.size[1] - 1)
             new_state = (state[0], new_col)
-        return (new_state, self.rewards_table[state])
+        return ((new_state, self.rewards_table[state]),)
 
     def prob(self, from_state, to_state, action, reward):
         """
