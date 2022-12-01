@@ -1,6 +1,5 @@
 from enum import IntEnum
 import numpy as np
-import random
 
 
 class Actions(IntEnum):
@@ -12,7 +11,7 @@ class Actions(IntEnum):
 
 class Env:
     """
-    A 4x4 grid world where possible action are movement in up, down, left or right direction
+    A m*n grid world where possible action are movement in up, down, left or right direction
     rewards_table stores mapping from state to reward
     It is assumed that movement from any direction to a given state provides same reward depending on destination state
     policy_table stores a deterministic mapping from state to optimal action
