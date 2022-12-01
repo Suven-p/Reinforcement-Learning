@@ -25,7 +25,7 @@ def update_state_values(env: Env, state_values, discount):
         largest_diff = max(largest_diff,
                            abs(state_values[s] - new_value))
     state_values = new_state_values
-    return largest_diff
+    return state_values, largest_diff
 
 
 def policy_evaluation(env: Env, state_values=None, discount=1.0):
@@ -37,7 +37,8 @@ def policy_evaluation(env: Env, state_values=None, discount=1.0):
     if state_values is None:
         state_values = np.zeros(env.S.size)
     while True:
-        largest_diff = update_state_values(env, state_values, discount)
+        state_values, largest_diff = update_state_values(
+            env, state_values, discount)
         diff_history.append(largest_diff)
         num_iter += 1
         if largest_diff < threshold:
