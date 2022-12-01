@@ -67,7 +67,7 @@ class Env:
         Simulate taking given action from given state
         Returns (new_state, reward)
         """
-        a = int(action)
+        a = int(a)
         p = self.transitions[s, a].sum(axis=1)
         s_ = np.random.choice(self.S, p=p)
         r = np.random.choice(self.R, p=self.transitions[s, a, s_])
@@ -104,7 +104,8 @@ class Env:
         return 0
 
     def prob(self, s_, r, s, a):
-        return self.transitions[s, a, s_, np.where(self.R ==r)[0][0]]
+        return self.transitions[s, int(a), s_, np.where(self.R == r)[0][0]]
+
 
 if __name__ == "__main__":
     env = Env()
