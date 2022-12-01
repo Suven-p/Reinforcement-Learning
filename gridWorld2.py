@@ -19,83 +19,93 @@ class Env:
     In default state, the policy table assumes each action is optimal
     """
 
-    def __init__(self, grid_size=(4, 4), terminal_states=[(0, 0), (3, 3)]):
-        self.S = np.array([(i, j) for i in range(grid_size[0])
-                           for j in range(grid_size[1])])
-        self.TerminalStates = terminal_states
-        self.A = np.array([int(i) for i in Actions])
-        self.R = np.array((-1, 0, -10))
+    def __init__(self, grid_size=(4, 4), terminal_states=[0, 15]):
         self.size = grid_size
+        self.S = np.arange(grid_size[0] * grid_size[1])
+        self.TerminalStates = terminal_states
+
+        self.A = Actions
+        self.R = np.array((-1, 0, -10))
+
+        self.transitions = np.zeros(
+            (len(self.S), len(self.A), len(self.S), len(self.R)))
+        self.__policy = np.zeros((len(self.S), len(self.A)))
+
+        for s in self.S:
+            for a in self.A:
+                for s_ in self.S:
+                    for r in range(len(self.R)):
+                        self.transitions[s, int(a), s_,
+                                         r] = self.__initial_prob(s, s_, a, r)
+
+        for s in self.S:
+            for a in self.A:
+                self.__policy[s, int(a)] = 0.25
 
     def get_state_index(self, state):
-        if not np.any([np.all(self.S[k] == state) for k in range(len(self.S))]):
+        isValidShape = len(state) == 2
+        isWithinLimit = (0 <= state[0] < self.size[0]) and (0 <= state[1] <
+                                                            self.size[1])
+        isValid = isValidShape and isWithinLimit
+        if not isValid:
             raise ValueError("Invalid state {}".format(state))
         return state[0] * self.size[1] + state[1]
 
-    def policy(self, state, action):
+    def get_state_from_index(self, index):
+        return (index % self.size[1], index // self.size[1])
+
+    def policy(self):
         """
         Implements policy
         Returns pi(a | s): Probability of taking action a from state s
         """
-        if action in self.policy_table[state]:
-            return 1 / len(self.policy_table[state])
-        else:
-            return 0
+        return self.__policy
 
-    def __call__(self, state, action):
+    def __call__(self, s, a):
         """
         Simulate taking given action from given state
         Returns (new_state, reward)
         """
-        if state in self.TerminalStates:
-            return state, 0
-        if action == self.A.U:
-            new_row = state[0]-1 if state[0] > 0 else 0
-            new_state = (new_row, state[1])
-        elif action == self.A.D:
-            new_row = min(state[0]+1, self.size[0] - 1)
-            new_state = (new_row, state[1])
-        elif action == self.A.L:
-            new_col = state[1]-1 if state[1] > 0 else 0
-            new_state = (state[0], new_col)
-        elif action == self.A.R:
-            new_col = min(state[1]+1, self.size[1] - 1)
-            new_state = (state[0], new_col)
-        return ((new_state, self.rewards_table[state]),)
+        a = int(action)
+        p = self.transitions[s, a].sum(axis=1)
+        s_ = np.random.choice(self.S, p=p)
+        r = np.random.choice(self.R, p=self.transitions[s, a, s_])
+        return (s_, r)
 
-    def prob(self, from_state, to_state, action, reward):
+    def __initial_prob(self, s, s_, a, r):
         """
-        Provides the probability distribution for model of problem
+        Provides the initial probability distribution for model of problem
         Returns p(s', r | s, a) Probability that action a from state s results in state s' with reward r
         """
-        if reward not in self.R:
+        if r not in self.R:
             return 0
-        new_state, new_reward = self.__call__(from_state, action)
-        if to_state == new_state and reward == new_reward:
+        if s in self.TerminalStates:
+            return 0
+        new_reward = -1
+        if a == self.A.U:
+            # new_row = s[0] - 1 if s[0] > 0 else 0
+            # new_state = (new_row, s[1])
+            new_state = max(0, s - self.size[1])
+        elif a == self.A.D:
+            # new_row = min(s[0] + 1, self.size[0] - 1)
+            # new_state = (new_row, s[1])
+            new_state = min(self.size[0] - 1, s + self.size[1])
+        elif a == self.A.L:
+            # new_col = s[1] - 1 if s[1] > 0 else 0
+            # new_state = (s[0], new_col)
+            new_state = max(0, s - 1)
+        elif a == self.A.R:
+            # new_col = min(s[1] + 1, self.size[1] - 1)
+            # new_state = (s[0], new_col)
+            new_state = min(self.size[1] - 1, s + 1)
+        else:
+            raise NotImplementedError
+        if s_ == new_state and r == new_reward:
             return 1
         return 0
 
-    def choose_action(self, state, discount):
-        max_value = float('-inf')
-        chosen_actions = []
-        for action in self.A:
-            new_state, current_reward = self.__call(state, action)
-            expected_return = current_reward + \
-                discount * self.state_values[new_state]
-            if expected_return > max_value:
-                max_value = expected_return
-                chosen_actions = [action]
-            elif expected_return == max_value:
-                chosen_actions.append(action)
-        return random.choice(chosen_actions)
-
-    def get_reward(self, from_state, action, to_state):
-        new_state, reward = self.__call__(from_state, action)
-        if new_state == to_state:
-            return reward
-        else:
-            return 0
-
+    def prob(self, s_, r, s, a):
+        return self.transitions[s, a, s_, np.where(self.R ==r)[0][0]]
 
 if __name__ == "__main__":
     env = Env()

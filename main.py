@@ -1,13 +1,17 @@
 import numpy as np
-import gridWorld
-from dp import policy_evaluation, policy_improvement
+import gridWorld2 as gw
+from dp2 import policy_evaluation, policy_improvement
 
-env = gridWorld.Env()
+env = gw.Env()
 
-policy_evaluation(env)
-policy_improvement(env)
-policy_evaluation(env)
-policy_improvement(env)
+state_values = policy_evaluation(env)
+policy_improvement(env, state_values)
+policy_evaluation(env, state_values)
+policy_improvement(env, state_values)
 
-for k, v in env.policy_table.items():
-    print("State:", k, "Action:", v)
+for state in env.S:
+    print("For state {}".format(state))
+    for action in env.A:
+        print(action, env.policy(state, action))
+    print("\n\n")
+        
