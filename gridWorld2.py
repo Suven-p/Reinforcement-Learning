@@ -72,7 +72,7 @@ class Env:
         r = np.random.choice(self.R, p=self.transitions[s, a, s_])
         return (s_, r)
 
-    def __initial_prob(self, s, s_, a, r):
+    def _initial_prob(self, s, s_, a, r):
         """
         Provides the initial probability distribution for model of problem
         Returns p(s', r | s, a) Probability that action a from state s results in state s' with reward r
@@ -80,26 +80,24 @@ class Env:
         if r not in self.R:
             return 0
         if s in self.TerminalStates:
-            return 0
+            return 1 if s == s_ and r == 0 else 0
         new_reward = -1
+        s = self.get_state_from_index(s)
         if a == self.A.U:
-            # new_row = s[0] - 1 if s[0] > 0 else 0
-            # new_state = (new_row, s[1])
-            new_state = max(0, s - self.size[1])
+            new_row = s[0] - 1 if s[0] > 0 else 0
+            new_state = (new_row, s[1])
         elif a == self.A.D:
-            # new_row = min(s[0] + 1, self.size[0] - 1)
-            # new_state = (new_row, s[1])
-            new_state = min(self.size[0] - 1, s + self.size[1])
+            new_row = min(s[0] + 1, self.size[0] - 1)
+            new_state = (new_row, s[1])
         elif a == self.A.L:
-            # new_col = s[1] - 1 if s[1] > 0 else 0
-            # new_state = (s[0], new_col)
-            new_state = max(0, s - 1)
+            new_col = s[1] - 1 if s[1] > 0 else 0
+            new_state = (s[0], new_col)
         elif a == self.A.R:
-            # new_col = min(s[1] + 1, self.size[1] - 1)
-            # new_state = (s[0], new_col)
-            new_state = min(self.size[1] - 1, s + 1)
+            new_col = min(s[1] + 1, self.size[1] - 1)
+            new_state = (s[0], new_col)
         else:
             raise NotImplementedError
+        new_state = self.get_state_index(new_state)
         if s_ == new_state and r == new_reward:
             return 1
         return 0
