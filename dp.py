@@ -2,29 +2,16 @@ import numpy as np
 from gridWorld import Env
 
 
-def compute_state_value(env: Env, state_values, s, gamma):
-    new_value = 0
-    for a in env.A:
-        current = 0
-        for s_ in env.S:
-            for r in env.R:
-                prob = env.prob(s_, r, s, a)
-                current += prob * (r +
-                                   gamma * state_values[s_])
-        new_value += env.policy[s, a] * current
-    return new_value
-
-
-def update_state_values(env: Env, state_values, discount):
+def update_state_values(env: Env, state_values, gamma):
     new_state_values = np.zeros(state_values.shape)
     largest_diff = 0
-    for s in env.S:
-        if s in env.TerminalStates:
-            continue
-        new_value = compute_state_value(env, state_values, s, discount)
-        new_state_values[s] = new_value
-        largest_diff = max(largest_diff,
-                           abs(state_values[s] - new_value))
+    # Calculate sum of p * (r + gamma * V(s'))
+    temp = env.transitions * (env.R + gamma * state_values.reshape((-1, 1)))
+    sum_sr = np.sum(temp, axis=(2, 3))
+    # Multiply return by policy
+    sum_sa = env.policy * sum_sr
+    new_state_values = np.sum(sum_sa, axis=1)
+    largest_diff = np.max(np.abs(state_values - new_state_values))
     state_values = new_state_values
     return state_values, largest_diff
 
@@ -77,4 +64,4 @@ def policy_improvement(env: Env, state_values, discount: float = 1.0):
                 new_policy.append(0)
         stable = stable and np.array_equal(new_policy, env.policy[s])
         env.policy[s] = new_policy
-        return stable
+    return stable
