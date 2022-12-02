@@ -37,20 +37,17 @@ def policy_evaluation(env: Env, state_values=None, discount=1.0):
     return state_values
 
 
-def policy_improvement(env: Env, state_values, discount: float = 1.0):
+def policy_improvement(env: Env, state_values, gamma: float = 1.0):
     stable = True
+    values = env.transitions * (env.R + gamma * state_values.reshape((-1, 1)))
+    values = np.sum(values, axis=(2, 3))
     for s in env.S:
         if s in env.TerminalStates:
             continue
-        optimal_actions = None
+        optimal_actions = []
         optimal_action_value = float('-inf')
         for a in env.A:
-            current_value = 0.0
-            for s_ in env.S:
-                for r in env.R:
-                    prob = env.prob(s_, r, s, a)
-                    current_value += prob * (
-                        r + discount * state_values[s_])
+            current_value = values[s, a]
             if abs(current_value - optimal_action_value) < 1e-6:
                 optimal_actions.append(a)
             elif current_value > optimal_action_value:
